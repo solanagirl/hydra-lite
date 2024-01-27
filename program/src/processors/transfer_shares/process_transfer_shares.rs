@@ -3,7 +3,6 @@ use crate::{
     state::{Fanout, FanoutMembershipVoucher},
 };
 
-use crate::MembershipModel;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -46,15 +45,14 @@ pub fn transfer_shares(ctx: Context<TransferShares>, shares: u64) -> Result<()> 
         return Err(HydraError::CannotTransferToSelf.into());
     }
 
+    if to_membership_account.shares == 1 {
+        return Err(HydraError::AlreadyClaimedShare.into());
+    }
+
     if from_membership_account.shares < shares {
         return Err(HydraError::InsufficientShares.into());
     }
 
-    if fanout.membership_model != MembershipModel::NFT
-        && fanout.membership_model != MembershipModel::Wallet
-    {
-        return Err(HydraError::TransferNotSupported.into());
-    }
     from_membership_account.shares -= shares;
     to_membership_account.shares += shares;
     Ok(())

@@ -1,9 +1,6 @@
-use crate::{
-    error::HydraError,
-    state::{Fanout, MembershipModel},
-};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
+use crate::state::Fanout;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
 pub struct InitializeFanoutArgs {
@@ -42,11 +39,7 @@ pub struct InitializeFanout<'info> {
     pub rent: Sysvar<'info, Rent>,
     pub token_program: Program<'info, Token>,
 }
-pub fn init(
-    ctx: Context<InitializeFanout>,
-    args: InitializeFanoutArgs,
-    model: MembershipModel,
-) -> Result<()> {
+pub fn init(ctx: Context<InitializeFanout>, args: InitializeFanoutArgs) -> Result<()> {
     let membership_mint = &ctx.accounts.membership_mint;
     let fanout = &mut ctx.accounts.fanout;
     fanout.authority = ctx.accounts.authority.to_account_info().key();
@@ -57,41 +50,13 @@ pub fn init(
     fanout.total_inflow = 0;
     fanout.last_snapshot_amount = fanout.total_inflow;
     fanout.bump_seed = args.bump_seed;
-    fanout.membership_model = model;
     fanout.membership_mint = if membership_mint.key() == spl_token::native_mint::id() {
         None
     } else {
         Some(membership_mint.key())
     };
-    match fanout.membership_model {
-        MembershipModel::Wallet | MembershipModel::NFT => {
-            fanout.membership_mint = None;
-            fanout.total_staked_shares = None;
-        }
-        MembershipModel::Token => {
-            fanout.total_shares = membership_mint.supply;
-            fanout.total_available_shares = 0;
-            if fanout.membership_mint.is_none() {
-                return Err(HydraError::MintAccountRequired.into());
-            }
-            let mint = &ctx.accounts.membership_mint;
-            fanout.total_staked_shares = Some(0);
-            if !mint.is_initialized {
-                let cpi_program = ctx.accounts.token_program.to_account_info();
-                let accounts = anchor_spl::token::InitializeMint {
-                    mint: mint.to_account_info(),
-                    rent: ctx.accounts.rent.to_account_info(),
-                };
-                let cpi_ctx = CpiContext::new(cpi_program, accounts);
-                anchor_spl::token::initialize_mint(
-                    cpi_ctx,
-                    0,
-                    &ctx.accounts.authority.to_account_info().key(),
-                    Some(&ctx.accounts.authority.to_account_info().key()),
-                )?;
-            }
-        }
-    };
+    fanout.membership_mint = None;
+    fanout.total_staked_shares = None;
 
     Ok(())
 }

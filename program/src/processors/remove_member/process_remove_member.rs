@@ -1,7 +1,6 @@
 use crate::{
     state::{Fanout, FanoutMembershipVoucher},
-    utils::{logic::calculation::*, validation::assert_owned_by},
-    MembershipModel,
+    utils::{logic::calculation::*, validation::assert_owned_by}
 };
 use anchor_lang::prelude::*;
 
@@ -40,11 +39,6 @@ pub fn remove_member(ctx: Context<RemoveMember>) -> Result<()> {
     update_fanout_for_remove(fanout)?;
     if assert_owned_by(&ctx.accounts.member, &spl_token::id()).is_ok() {
         return Err(HydraError::InvalidCloseAccountDestination.into());
-    }
-    if fanout.membership_model != MembershipModel::NFT
-        && fanout.membership_model != MembershipModel::Wallet
-    {
-        return Err(HydraError::RemoveNotSupported.into());
     }
     if member_voucher.shares != 0 {
         return Err(HydraError::RemoveSharesMustBeZero.into());

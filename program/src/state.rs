@@ -3,19 +3,6 @@ use std::default::Default;
 
 pub const HOLDING_ACCOUNT_SIZE: usize = 1;
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, Copy, Debug)]
-pub enum MembershipModel {
-    Wallet = 0,
-    Token = 1,
-    NFT = 2,
-}
-
-impl Default for MembershipModel {
-    fn default() -> Self {
-        MembershipModel::Wallet
-    }
-}
-
 pub const FANOUT_ACCOUNT_SIZE: usize = 300;
 #[account]
 #[derive(Default, Debug)]
@@ -30,7 +17,6 @@ pub struct Fanout {
     pub bump_seed: u8,                     //1
     pub account_owner_bump_seed: u8,       //1
     pub total_available_shares: u64,       //8
-    pub membership_model: MembershipModel, //1
     pub membership_mint: Option<Pubkey>,   //32
     pub total_staked_shares: Option<u64>,  //4
 }

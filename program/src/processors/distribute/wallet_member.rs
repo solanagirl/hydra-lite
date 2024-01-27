@@ -1,4 +1,3 @@
-use crate::MembershipModel;
 use anchor_lang::prelude::*;
 
 use crate::{
@@ -6,8 +5,8 @@ use crate::{
     utils::validation::*,
 };
 
-use crate::utils::logic::distribution::{distribute_mint, distribute_native};
 use anchor_spl::token::{Mint, Token};
+use crate::utils::logic::distribution::{distribute_mint, distribute_native};
 
 #[derive(Accounts)]
 #[instruction(distribute_for_mint: bool)]
@@ -59,7 +58,6 @@ pub fn distribute_for_wallet(
     assert_owned_by(&fanout_info, &crate::ID)?;
     assert_owned_by(&membership_voucher_info, &crate::ID)?;
     assert_owned_by_one(&member.to_account_info(), vec![&System::id(), &crate::id()])?;
-    assert_membership_model(fanout, MembershipModel::Wallet)?;
     assert_shares_distributed(fanout)?;
     if distribute_for_mint {
         let membership_key = &ctx.accounts.member.key().clone();

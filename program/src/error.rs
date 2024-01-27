@@ -30,6 +30,9 @@ pub enum HydraError {
     #[msg("Invalid authority")]
     InvalidAuthority,
 
+    #[msg("Already has 1 share")]
+    AlreadyClaimedShare,
+
     #[msg("Not Enough Available Shares")]
     InsufficientShares,
 
@@ -41,9 +44,6 @@ pub enum HydraError {
 
     #[msg("A Token type Fanout requires a Membership Mint")]
     MintAccountRequired,
-
-    #[msg("Invalid Membership Model")]
-    InvalidMembershipModel,
 
     #[msg("Invalid Membership Voucher")]
     InvalidMembershipVoucher,

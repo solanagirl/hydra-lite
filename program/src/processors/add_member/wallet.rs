@@ -1,14 +1,13 @@
 use super::arg::AddMemberArgs;
+use anchor_lang::prelude::*;
+use anchor_spl::token::Token;
 use crate::{
     state::{Fanout, FanoutMembershipVoucher, FANOUT_MEMBERSHIP_VOUCHER_SIZE},
     utils::{
         logic::calculation::*,
-        validation::{assert_membership_model, assert_owned_by, assert_owned_by_one},
+        validation::{assert_owned_by, assert_owned_by_one},
     },
-    MembershipModel,
 };
-use anchor_lang::prelude::*;
-use anchor_spl::token::Token;
 
 #[derive(Accounts)]
 #[instruction(args: AddMemberArgs)]
@@ -42,14 +41,12 @@ pub fn add_member_wallet(ctx: Context<AddMemberWallet>, args: AddMemberArgs) -> 
     let member = &ctx.accounts.member;
     let membership_account = &mut ctx.accounts.membership_account;
     update_fanout_for_add(fanout, args.shares)?;
-    assert_membership_model(fanout, MembershipModel::Wallet)?;
     assert_owned_by(&fanout.to_account_info(), &crate::ID)?;
     assert_owned_by_one(&member.to_account_info(), vec![&System::id(), &crate::id()])?;
     membership_account.membership_key = member.key();
     membership_account.shares = args.shares;
-    membership_account.bump_seed = *ctx.bumps.get("membership_account").unwrap();
+    membership_account.bump_seed = ctx.bumps.membership_account;
     membership_account.fanout = fanout.key();
     membership_account.stake_time = Clock::get()?.unix_timestamp;
-
     Ok(())
 }

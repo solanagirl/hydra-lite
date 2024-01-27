@@ -1,13 +1,9 @@
-use crate::{
-    error::HydraError,
-    state::{Fanout, MembershipModel},
-};
 use anchor_lang::{
     prelude::*,
     solana_program::{instruction::Instruction, program_memory::sol_memcmp, pubkey::PUBKEY_BYTES},
 };
 use anchor_spl::token::TokenAccount;
-use mpl_token_metadata::state::{Metadata, TokenMetadataAccount};
+use crate::{error::HydraError, state::Fanout};
 
 pub fn cmp_pubkeys(a: &Pubkey, b: &Pubkey) -> bool {
     sol_memcmp(a.as_ref(), b.as_ref(), PUBKEY_BYTES) == 0
@@ -37,13 +33,6 @@ pub fn assert_owned_by(account: &AccountInfo, owner: &Pubkey) -> Result<()> {
     } else {
         Ok(())
     }
-}
-
-pub fn assert_membership_model(fanout: &Account<Fanout>, model: MembershipModel) -> Result<()> {
-    if fanout.membership_model != model {
-        return Err(HydraError::InvalidMembershipModel.into());
-    }
-    Ok(())
 }
 
 pub fn assert_ata(
@@ -91,37 +80,14 @@ pub fn assert_holding(
     Ok(())
 }
 
-pub fn assert_distributed(
-    ix: Instruction,
-    subject: &Pubkey,
-    membership_model: MembershipModel,
-) -> Result<()> {
+pub fn assert_distributed(ix: Instruction, subject: &Pubkey) -> Result<()> {
     if !cmp_pubkeys(&ix.program_id, &crate::id()) {
-        return Err(HydraError::MustDistribute.into());
-    }
-    let instruction_id = match membership_model {
-        MembershipModel::Wallet => [252, 168, 167, 66, 40, 201, 182, 163],
-        MembershipModel::NFT => [108, 240, 68, 81, 144, 83, 58, 153],
-        MembershipModel::Token => [126, 105, 46, 135, 28, 36, 117, 212],
-    };
-    if sol_memcmp(instruction_id.as_ref(), ix.data[0..8].as_ref(), 8) != 0 {
         return Err(HydraError::MustDistribute.into());
     }
     if !cmp_pubkeys(subject, &ix.accounts[1].pubkey) {
         return Err(HydraError::MustDistribute.into());
     }
     Ok(())
-}
-
-pub fn assert_valid_metadata(
-    metadata_account: &AccountInfo,
-    mint: &AccountInfo,
-) -> Result<Metadata> {
-    let meta = Metadata::from_account_info(metadata_account)?;
-    if !cmp_pubkeys(&meta.mint, mint.key) {
-        return Err(HydraError::InvalidMetadata.into());
-    }
-    Ok(meta)
 }
 
 pub fn assert_owned_by_one(account: &AccountInfo, owners: Vec<&Pubkey>) -> Result<()> {

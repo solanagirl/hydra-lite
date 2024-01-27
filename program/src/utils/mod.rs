@@ -139,7 +139,7 @@ pub fn parse_mint_membership_voucher<'info>(
         FanoutMembershipMintVoucher {
             fanout: *fanout,
             fanout_mint: *fanout_mint,
-            last_inflow: total_inflow,
+            last_inflow: 0,
             bump_seed: mint_membership_voucher_bump,
             stake_time,
         }
