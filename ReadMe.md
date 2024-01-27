@@ -2,6 +2,8 @@
 
 This repository is a fork of the Metaplex Hydra repo that simplifies the fanout methods to wallet and evenly distributes shares. The program is used for the Chonky Dapp launch.
 
+[Solana Playground](https://beta.solpg.io/65b550edcffcf4b13384cf32) of the program
+
 ## Table of Contents
 
 - [Introduction](#introduction)
